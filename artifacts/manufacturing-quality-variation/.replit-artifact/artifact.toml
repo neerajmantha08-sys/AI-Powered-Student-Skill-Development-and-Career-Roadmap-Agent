@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Manufacturing Quality Variation and Defect Probability"
+description = "A professional BTech Statistics project app for exploring manufacturing defect rates, binomial probability, batch-level analysis, simulation results, observations, and conclusions in clear student-friendly language."
+version = "1.0.0"
+id = "artifacts/manufacturing-quality-variation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21023
+
+[services.development]
+run = "pnpm --filter @workspace/manufacturing-quality-variation run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/manufacturing-quality-variation", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/manufacturing-quality-variation/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21023"
+BASE_PATH = "/"
