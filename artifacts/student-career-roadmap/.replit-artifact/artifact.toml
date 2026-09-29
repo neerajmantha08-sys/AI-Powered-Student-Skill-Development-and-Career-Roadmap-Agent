@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/career-roadmap/"
+title = "AI Student Career Roadmap Agent"
+description = "A professional BTech project that analyzes a student's profile, identifies career skill gaps, prioritizes learning, recommends projects, and creates a personalized roadmap."
+version = "1.0.0"
+id = "artifacts/student-career-roadmap"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/career-roadmap/" ]
+localPort = 21001
+
+[services.development]
+run = "pnpm --filter @workspace/student-career-roadmap run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/student-career-roadmap", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/student-career-roadmap/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21001"
+BASE_PATH = "/career-roadmap/"
