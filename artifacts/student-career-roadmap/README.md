@@ -52,17 +52,11 @@ chatbot:
 
 ## AI Agent workflow
 
-The current workspace build includes a deterministic local demo agent in
-`src/lib/agent.ts`. It is intentionally structured as separate steps and
-produces different results from the student's submitted profile, career,
-experience, skills, projects, and available time. This keeps the complete
-academic presentation flow runnable without putting a provider key in the
+The workspace build uses a server-side Gemini request. The browser submits the
+student profile to the API server, and the server sends the profile to Gemini
+with a structured JSON response schema. The server validates the returned
+roadmap before the dashboard displays it. The Gemini key is never sent to the
 browser.
-
-The live LLM connection is intentionally deferred until an OpenAI key is
-provided through Replit Secrets. The follow-up implementation should add a
-server-side endpoint, validate the structured response, and preserve the local
-fallback when the provider is unavailable.
 
 ## How the application works
 
@@ -80,14 +74,14 @@ not an official, scientific, or guaranteed career score.
 
 ## Configuration
 
-The current local demo does not require an API key. For the future live LLM
-connection, add the key as a Replit Secret named:
+Add the key as a Replit Secret named:
 
 ```text
-OPENAI_API_KEY
+GEMINI_API_KEY
 ```
 
-Do not add this key to frontend files, source control, or chat messages.
+The server reads this key only at request time. Do not add it to frontend
+files, source control, or chat messages.
 
 ## Run the project
 

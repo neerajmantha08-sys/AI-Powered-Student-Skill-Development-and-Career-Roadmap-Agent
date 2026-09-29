@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: career-roadmap
+    description: Student career roadmap generation
 paths:
   /healthz:
     get:
@@ -24,6 +26,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /career-roadmap/generate:
+    post:
+      operationId: generateCareerRoadmap
+      tags: [career-roadmap]
+      summary: Generate a personalized student career roadmap
+      description: Uses the server-side Gemini integration to analyze a student profile and create a structured roadmap.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerRoadmapInput"
+      responses:
+        "200":
+          description: Personalized career roadmap
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerRoadmap"
+        "400":
+          description: Invalid student profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Gemini provider failure or invalid provider response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +66,119 @@ components:
           type: string
       required:
         - status
+    CareerRoadmapInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        degree:
+          type: string
+          minLength: 1
+        skills:
+          type: array
+          items:
+            type: string
+        projects:
+          type: string
+        career:
+          type: string
+          minLength: 1
+        customCareer:
+          type: string
+        experience:
+          type: string
+          minLength: 1
+        learningTime:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - degree
+        - skills
+        - projects
+        - career
+        - customCareer
+        - experience
+        - learningTime
+    CareerProject:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - description
+        - skills
+    CareerRoadmapStep:
+      type: object
+      properties:
+        week:
+          type: string
+        focus:
+          type: string
+        outcome:
+          type: string
+      required:
+        - week
+        - focus
+        - outcome
+    CareerRoadmap:
+      type: object
+      properties:
+        career:
+          type: string
+        requirements:
+          type: array
+          items:
+            type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        gaps:
+          type: array
+          items:
+            type: string
+        priorities:
+          type: array
+          items:
+            type: string
+        readiness:
+          type: integer
+          minimum: 0
+          maximum: 100
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerProject"
+        roadmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerRoadmapStep"
+        recommendation:
+          type: string
+      required:
+        - career
+        - requirements
+        - strengths
+        - gaps
+        - priorities
+        - readiness
+        - projects
+        - roadmap
+        - recommendation
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 
