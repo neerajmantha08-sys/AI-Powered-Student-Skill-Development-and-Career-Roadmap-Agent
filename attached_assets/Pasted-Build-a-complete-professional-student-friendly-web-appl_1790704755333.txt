@@ -1,0 +1,465 @@
+Build a complete, professional, student-friendly web application titled:
+
+**AI-Powered Student Skill Development & Career Roadmap Agent**
+
+This is a BTech academic project. The application must solve a real student problem and must clearly demonstrate the use of an AI Agent and an LLM. It should look like a professional career-development portal, but it must remain simple, clean, understandable, and easy to demonstrate in a college presentation.
+
+Do NOT make this a simple chatbot. The AI Agent must perform a clear multi-step workflow: analyze the student's profile, understand the selected career, identify skill gaps, prioritize the missing skills, create a learning sequence, and recommend suitable projects.
+
+## PROJECT OBJECTIVE
+
+The purpose of the application is to help students understand what skills they need to develop for their desired career.
+
+The student provides:
+
+* Name
+* Degree/branch
+* Current skills
+* Existing projects
+* Target career
+* Experience level
+* Available learning time
+
+The AI Agent then:
+
+1. Analyzes the student's current profile.
+2. Determines the important skills associated with the selected career.
+3. Compares the student's current skills with the target-career requirements.
+4. Identifies skill gaps.
+5. Prioritizes the skills that should be learned first.
+6. Creates a logical learning roadmap.
+7. Suggests practical projects for developing those skills.
+8. Produces a personalized career-development plan.
+
+## PROBLEM STATEMENT
+
+Many students are unsure about which skills they need to learn for their desired career. They may know their current skills but often do not know what skills are missing or what they should learn next. This project aims to develop an AI-powered agent that analyzes a student's current skills and career goal, identifies skill gaps, and creates a simple personalized learning and project roadmap to help the student prepare for their desired career.
+
+# STEP 1 — CREATE THE WEBSITE
+
+Create a clean, modern and professional career-development portal.
+
+The website should contain these main sections:
+
+1. Home
+2. Student Profile
+3. Career Selection
+4. Skills Input
+5. Generate Roadmap
+6. Results Dashboard
+
+Use a professional student/career-development visual style.
+
+The interface should be:
+
+* Clean
+* Modern
+* Simple
+* Responsive
+* Easy to understand
+* Suitable for a BTech project presentation
+* Professional but not overly complicated
+
+Do not overcrowd the interface with unnecessary features.
+
+The homepage should clearly explain what the application does.
+
+Include a clear main button such as:
+
+**Create My Career Roadmap**
+
+# STEP 2 — CREATE THE STUDENT INPUT FORM
+
+Create a professional form titled:
+
+**Build Your Career Profile**
+
+Include:
+
+Name
+
+Degree / Branch
+
+Current Skills
+
+Existing Projects
+
+Target Career
+
+Experience Level
+
+Available Learning Time
+
+Allow the student to enter multiple skills.
+
+For Target Career, provide useful options such as:
+
+* Data Analyst
+* Full-Stack Developer
+* AI/ML Engineer
+* Cloud Engineer
+* Cybersecurity Analyst
+* Software Developer
+
+Also allow a custom career option.
+
+For Experience Level:
+
+* Beginner
+* Intermediate
+* Advanced
+
+For Available Learning Time:
+
+* Less than 5 hours/week
+* 5–10 hours/week
+* 10–20 hours/week
+* More than 20 hours/week
+
+Provide a clear button:
+
+**Generate My Roadmap**
+
+Validate the form before submitting it.
+
+# STEP 3 — CONNECT THE LLM
+
+Connect the application to an appropriate LLM API.
+
+Do not hard-code one fixed response.
+
+The AI response must depend on the student's actual input.
+
+The LLM should analyze:
+
+* Current skills
+* Existing projects
+* Target career
+* Experience level
+* Available learning time
+
+The AI should generate:
+
+* Career skill requirements
+* Current strengths
+* Missing skills
+* Skill priorities
+* Learning sequence
+* Project recommendations
+* Personalized roadmap
+
+Keep the AI output structured and predictable so it can be displayed professionally on the dashboard.
+
+Use environment variables for API keys.
+
+NEVER expose API keys in frontend code.
+
+Create a clear `.env`/Secrets configuration approach appropriate for Replit.
+
+# STEP 4 — IMPLEMENT THE AI AGENT
+
+This is the most important part of the project.
+
+Do not present the system as:
+
+"Student enters information → LLM gives an answer."
+
+Instead, implement the AI Agent as a structured decision-making workflow.
+
+The conceptual workflow should be:
+
+Student Profile
+↓
+Agent receives student information
+↓
+Agent analyzes the student's current skills
+↓
+Agent identifies the requirements of the target career
+↓
+Agent compares current skills with career requirements
+↓
+Agent identifies skill gaps
+↓
+Agent prioritizes the skill gaps
+↓
+Agent creates a learning sequence
+↓
+Agent recommends practical projects
+↓
+Agent creates the final personalized roadmap
+↓
+Results Dashboard
+
+The application should clearly communicate that the Agent is performing these steps.
+
+If appropriate, separate the internal logic into functions/modules such as:
+
+* analyzeStudentProfile()
+* analyzeCareerRequirements()
+* identifySkillGaps()
+* prioritizeSkills()
+* createLearningRoadmap()
+* recommendProjects()
+* generateFinalPlan()
+
+Keep the implementation simple and reliable.
+
+Do not add unnecessary multi-agent complexity.
+
+# STEP 5 — CREATE THE RESULTS DASHBOARD
+
+After the AI Agent completes its analysis, display a professional results dashboard.
+
+The dashboard should include:
+
+## Career Goal
+
+Example:
+
+Data Analyst
+
+## Profile Summary
+
+Show the student's basic information.
+
+## Current Skills
+
+Display skills the student already has.
+
+Example:
+
+✓ Python
+✓ Excel
+✓ Basic SQL
+
+## Skills to Develop
+
+Example:
+
+○ Advanced SQL
+○ Statistics
+○ Power BI
+○ Data Visualization
+
+## Skill Priority
+
+Clearly show which skills should be learned first.
+
+Example:
+
+1. Advanced SQL
+2. Statistics
+3. Power BI
+4. Data Visualization
+
+## Career Readiness
+
+Display a simple visual indicator.
+
+Example:
+
+Career Readiness: 60%
+
+Do not claim this is an official or scientifically validated score. Clearly present it as an AI-generated indicative assessment.
+
+## Recommended Projects
+
+Example:
+
+1. Student Performance Dashboard
+2. Sales Data Analysis
+3. Customer Analytics Project
+
+For every project, briefly explain which skill it helps develop.
+
+## Personalized Learning Roadmap
+
+Example:
+
+Week 1 → SQL Fundamentals
+Week 2 → Advanced SQL
+Week 3 → Statistics
+Week 4 → Power BI
+Week 5 → Data Visualization
+Week 6 → Portfolio Project
+
+The roadmap should adapt to the student's available learning time.
+
+## AI Recommendations
+
+Provide a short personalized explanation of why the Agent selected these skills and projects.
+
+# STEP 6 — MAKE THE OUTPUT EASY TO PRESENT
+
+The final dashboard must be visually organized so that a student can explain it during a classroom presentation.
+
+The presentation flow should be:
+
+1. Enter student profile.
+2. Select target career.
+3. Enter current skills.
+4. Click "Generate My Roadmap".
+5. Show the AI Agent processing the information.
+6. Display identified skill gaps.
+7. Display prioritized skills.
+8. Display recommended projects.
+9. Display the personalized learning roadmap.
+
+The application should make this workflow obvious.
+
+# STEP 7 — TEST THE APPLICATION
+
+Create and test at least five different student profiles.
+
+Use these example career profiles:
+
+1. Data Analyst
+2. Full-Stack Developer
+3. AI/ML Engineer
+4. Cloud Engineer
+5. Cybersecurity Analyst
+
+Make sure the generated recommendations change according to the student's selected career and current skills.
+
+Do not use one fixed roadmap for every career.
+
+# STEP 8 — ERROR HANDLING
+
+Handle:
+
+* Empty fields
+* Missing API key
+* Invalid input
+* LLM/API failure
+* Unexpected AI response
+* Network errors
+
+Show friendly messages instead of technical error messages.
+
+Example:
+
+"Unable to generate the roadmap right now. Please check your connection and try again."
+
+# STEP 9 — PROJECT STRUCTURE
+
+Keep the project structure organized and beginner-friendly.
+
+Separate:
+
+* Frontend
+* Backend
+* AI Agent logic
+* Configuration
+* Styling
+
+Add a README.md explaining:
+
+* Project title
+* Problem statement
+* Project objective
+* Features
+* Technologies used
+* AI Agent workflow
+* How the application works
+* How to configure the API key
+* How to run the project
+* How to test the project
+
+# STEP 10 — IMPORTANT TECHNICAL REQUIREMENTS
+
+Use simple and reliable technologies.
+
+Preferred structure:
+
+Frontend:
+HTML, CSS and JavaScript OR a simple React frontend if it genuinely makes the application easier to maintain.
+
+Backend:
+Python Flask or another simple backend.
+
+AI:
+An LLM API.
+
+Do not introduce unnecessary technologies.
+
+Do not add a database unless it is genuinely useful.
+
+The first version should focus on getting the complete AI Agent workflow working reliably.
+
+# STEP 11 — ACADEMIC PRESENTATION REQUIREMENTS
+
+The project should clearly demonstrate:
+
+Problem
+↓
+Student Input
+↓
+AI Agent
+↓
+Career Analysis
+↓
+Skill-Gap Detection
+↓
+Skill Prioritization
+↓
+Learning Roadmap
+↓
+Project Recommendations
+↓
+Final Personalized Career Plan
+
+The project must look like a genuine academic software project and not like a generic AI-generated template.
+
+Use natural, human-friendly wording throughout the interface.
+
+Avoid excessive buzzwords such as:
+"revolutionary"
+"cutting-edge"
+"next-generation"
+"game-changing"
+
+Keep the language professional, simple and realistic.
+
+# STEP 12 — DO NOT DO THESE THINGS
+
+Do NOT:
+
+* Build only a chatbot.
+* Use a fixed response for every student.
+* Hard-code one career roadmap.
+* Put API keys directly into frontend code.
+* Add unnecessary features just to make the project larger.
+* Claim that the AI provides guaranteed career advice.
+* Use fake statistics or fake job-market data.
+* Add complicated multi-agent systems unless required.
+* Make the UI excessively complicated.
+
+# FINAL REQUIREMENT
+
+Before considering the project complete, make sure the application is actually runnable.
+
+Test the complete flow:
+
+Home
+→ Student Profile
+→ Career Selection
+→ Skills Input
+→ Generate Roadmap
+→ AI Agent Processing
+→ Skill-Gap Analysis
+→ Project Recommendations
+→ Personalized Learning Roadmap
+→ Results Dashboard
+
+After implementation, explain to me:
+
+1. What files were created.
+2. How the AI Agent works.
+3. Where the LLM API key must be added.
+4. How to run the project.
+5. How to test it.
+6. How to prepare it for publishing/deployment on Replit.
+
+Do not publish/deploy the application yet.
+
+First make sure the application works correctly in the Replit workspace.
