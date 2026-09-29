@@ -4,6 +4,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QualityShell } from "@/components/quality-shell";
+import { BatchProvider } from "@/components/batch-context";
 import { BatchProbabilityPage, BinomialCalculatorPage, ConclusionPage, DatasetPage, DefectRatePage, OverviewPage, ResultsPage, SimulationPage } from "@/pages/project-pages";
 import NotFound from "@/pages/not-found";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
@@ -39,9 +40,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
+        <BatchProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+        </BatchProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

@@ -1,6 +1,8 @@
 import { BarChart3, BookOpen, Calculator, ChevronRight, ClipboardList, FlaskConical, LayoutDashboard, Menu, Network, PanelLeftClose, Target, X } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { useBatches } from "@/components/batch-context";
+import { formatNumber, getDatasetStats } from "@/lib/stats";
 
 const navItems = [
   { href: "/", label: "Project overview", icon: LayoutDashboard, section: "START HERE" },
@@ -16,6 +18,8 @@ const navItems = [
 export function QualityShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { batches } = useBatches();
+  const { totalInspected } = getDatasetStats(batches);
   const grouped = navItems.reduce<Record<string, typeof navItems>>((acc, item) => {
     (acc[item.section] ||= []).push(item);
     return acc;
@@ -33,7 +37,7 @@ export function QualityShell({ children }: { children: ReactNode }) {
         <div className="mx-6 mb-7 rounded-xl border border-sidebar-border bg-sidebar-accent/50 px-4 py-3">
           <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/55"><span className="status-dot" /> OBSERVATION SET 01</div>
           <div className="mt-2 text-sm font-semibold text-sidebar-foreground">Manufacturing variation</div>
-          <div className="lab-mono mt-1 text-[10px] text-sidebar-foreground/45">12 BATCHES · 10,144 UNITS</div>
+           <div className="lab-mono mt-1 text-[10px] text-sidebar-foreground/45">{batches.length} BATCHES · {formatNumber(totalInspected)} UNITS</div>
         </div>
         <nav className="mobile-nav-scroll flex-1 space-y-6 overflow-y-auto px-4 pb-5">
           {Object.entries(grouped).map(([section, items]) => (
@@ -51,7 +55,7 @@ export function QualityShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="border-t border-sidebar-border px-6 py-5">
           <div className="lab-mono text-[10px] text-sidebar-foreground/40">PROJECT STATUS</div>
-          <div className="mt-2 flex items-center gap-2 text-xs text-sidebar-foreground/75"><span className="status-dot" /> Dataset loaded locally</div>
+           <div className="mt-2 flex items-center gap-2 text-xs text-sidebar-foreground/75"><span className="status-dot" /> Dataset editable locally</div>
         </div>
       </aside>
       {mobileOpen && <button type="button" className="fixed inset-0 z-30 bg-slate-950/30 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation overlay" data-testid="button-navigation-overlay" />}

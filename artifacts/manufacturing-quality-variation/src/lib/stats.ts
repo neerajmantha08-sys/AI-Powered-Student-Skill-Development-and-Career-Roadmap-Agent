@@ -5,7 +5,7 @@ export type Batch = {
   defectRate: number;
 };
 
-export const batches: Batch[] = [
+export const initialBatches: Batch[] = [
   { batchId: "B-2401", productsInspected: 842, defectiveProducts: 11, defectRate: 11 / 842 },
   { batchId: "B-2402", productsInspected: 916, defectiveProducts: 8, defectRate: 8 / 916 },
   { batchId: "B-2403", productsInspected: 788, defectiveProducts: 15, defectRate: 15 / 788 },
@@ -20,12 +20,18 @@ export const batches: Batch[] = [
   { batchId: "B-2412", productsInspected: 1178, defectiveProducts: 24, defectRate: 24 / 1178 },
 ];
 
-export const totalInspected = batches.reduce((sum, batch) => sum + batch.productsInspected, 0);
-export const totalDefective = batches.reduce((sum, batch) => sum + batch.defectiveProducts, 0);
-export const overallDefectRate = totalDefective / totalInspected;
-export const observedMean = batches.reduce((sum, batch) => sum + batch.defectRate, 0) / batches.length;
-export const highestRateBatch = batches.reduce((top, batch) => batch.defectRate > top.defectRate ? batch : top, batches[0]);
-export const lowestRateBatch = batches.reduce((low, batch) => batch.defectRate < low.defectRate ? batch : low, batches[0]);
+export function getDatasetStats(currentBatches: Batch[]) {
+  const emptyBatch: Batch = { batchId: "—", productsInspected: 0, defectiveProducts: 0, defectRate: 0 };
+  const totalInspected = currentBatches.reduce((sum, batch) => sum + batch.productsInspected, 0);
+  const totalDefective = currentBatches.reduce((sum, batch) => sum + batch.defectiveProducts, 0);
+  const overallDefectRate = totalInspected > 0 ? totalDefective / totalInspected : 0;
+  const observedMean = currentBatches.length > 0
+    ? currentBatches.reduce((sum, batch) => sum + batch.defectRate, 0) / currentBatches.length
+    : 0;
+  const highestRateBatch = currentBatches.reduce<Batch | null>((top, batch) => !top || batch.defectRate > top.defectRate ? batch : top, null) ?? emptyBatch;
+  const lowestRateBatch = currentBatches.reduce<Batch | null>((low, batch) => !low || batch.defectRate < low.defectRate ? batch : low, null) ?? emptyBatch;
+  return { totalInspected, totalDefective, overallDefectRate, observedMean, highestRateBatch, lowestRateBatch };
+}
 
 export function formatPct(value: number, digits = 2) {
   return `${(value * 100).toFixed(digits)}%`;

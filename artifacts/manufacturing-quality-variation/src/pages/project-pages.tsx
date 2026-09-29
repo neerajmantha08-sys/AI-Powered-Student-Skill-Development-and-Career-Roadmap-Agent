@@ -1,8 +1,9 @@
 import { ArrowRight, CheckCircle2, CircleAlert, Filter, GitBranch, Info, Play, RefreshCw, Search, SlidersHorizontal, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { Link } from "wouter";
+import { useBatches } from "@/components/batch-context";
 import { PageHeader, SectionLabel } from "@/components/quality-shell";
-import { batches, binomialAtLeast, binomialCdf, binomialProbability, formatNumber, formatPct, highestRateBatch, lowestRateBatch, observedMean, overallDefectRate, seededSimulation, totalDefective, totalInspected } from "@/lib/stats";
+import { binomialAtLeast, binomialCdf, binomialProbability, formatNumber, formatPct, getDatasetStats, seededSimulation } from "@/lib/stats";
 
 function ShellPage({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-[1400px] px-5 py-9 sm:px-8 lg:px-12 lg:py-12 ${className}`}>{children}</div>;
@@ -17,6 +18,8 @@ function EmptyState({ message }: { message: string }) {
 }
 
 export function OverviewPage() {
+  const { batches } = useBatches();
+  const { totalInspected, totalDefective, overallDefectRate } = getDatasetStats(batches);
   return <ShellPage>
     <PageHeader eyebrow="Project overview · 01" title={<>When variation becomes a <span className="text-primary">real risk.</span></>} description="A transparent, local notebook for tracing manufacturing variation from inspected units to the probability of a defect in the next product." action={<Link href="/dataset" className="btn-primary" data-testid="link-start-investigation">Open the dataset <ArrowRight size={16} /></Link>} />
     <div className="grid gap-5 lg:grid-cols-[1.3fr_.7fr]">
@@ -45,10 +48,17 @@ export function OverviewPage() {
 }
 
 export function DatasetPage() {
+  const { batches, addBatch, removeBatch, resetBatches } = useBatches();
+  const { totalInspected, totalDefective, overallDefectRate } = getDatasetStats(batches);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<"batchId" | "productsInspected" | "defectiveProducts" | "defectRate">("batchId");
   const [direction, setDirection] = useState<"asc" | "desc">("asc");
   const [threshold, setThreshold] = useState("all");
+  const [newBatchId, setNewBatchId] = useState("");
+  const [newInspected, setNewInspected] = useState("");
+  const [newDefective, setNewDefective] = useState("");
+  const [formMessage, setFormMessage] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
   const filtered = useMemo(() => batches.filter((batch) => {
     const queryMatch = batch.batchId.toLowerCase().includes(query.toLowerCase().trim());
     const thresholdMatch = threshold === "all" || (threshold === "low" ? batch.defectRate < overallDefectRate : threshold === "watch" ? batch.defectRate >= overallDefectRate : batch.defectRate > overallDefectRate * 1.35);
@@ -57,23 +67,58 @@ export function DatasetPage() {
     const left = a[sortBy]; const right = b[sortBy];
     const result = typeof left === "string" ? left.localeCompare(right as string) : (left as number) - (right as number);
     return direction === "asc" ? result : -result;
-  }), [query, sortBy, direction, threshold]);
+  }), [batches, query, sortBy, direction, threshold, overallDefectRate]);
   const changeSort = (value: typeof sortBy) => { if (value === sortBy) setDirection(direction === "asc" ? "desc" : "asc"); else { setSortBy(value); setDirection("asc"); } };
+  const handleAddBatch = () => {
+    const result = addBatch({
+      batchId: newBatchId,
+      productsInspected: Number(newInspected),
+      defectiveProducts: Number(newDefective),
+    });
+    setFormMessage(result.ok ? "" : result.message ?? "Check the batch values.");
+    setFormSuccess(result.ok ? `${newBatchId.trim()} was added to the dataset.` : "");
+    if (result.ok) {
+      setNewBatchId("");
+      setNewInspected("");
+      setNewDefective("");
+    }
+  };
+  const handleRemoveBatch = (batchId: string) => {
+    if (!removeBatch(batchId)) setFormMessage("Keep at least one batch in the dataset so the analysis has a baseline.");
+    else setFormSuccess(`${batchId} was removed from the dataset.`);
+  };
   return <ShellPage>
-    <PageHeader eyebrow="Investigation · 02" title="Manufacturing dataset" description="Twelve production snapshots generated for this study. Search by batch, focus the rate band, or sort a column to see how the line moves." action={<div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><span className="status-dot" /> deterministic local data</div>} />
+    <PageHeader eyebrow="Investigation · 02" title="Manufacturing dataset" description="Start with the sample batches, then add your own production records. Every rate, probability, result, and conclusion updates from the dataset you keep here." action={<div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><span className="status-dot" /> editable local data</div>} />
+    <section className="grid-paper rounded-2xl border border-border bg-card p-6 sm:p-7" data-testid="section-add-batch">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div><SectionLabel>Add a production batch</SectionLabel><p className="max-w-2xl text-sm leading-6 text-muted-foreground">Enter the counts from your own inspection record. The defect rate is calculated automatically as defective products ÷ products inspected.</p></div>
+        <button type="button" className="btn-secondary shrink-0" onClick={() => { resetBatches(); setFormMessage(""); setFormSuccess("The original sample dataset was restored."); }} data-testid="button-reset-sample-data"><RefreshCw size={15} /> Restore sample data</button>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_auto]">
+        <label className="block"><span className="mb-2 block text-xs font-bold">Batch ID</span><input className="input-lab lab-mono" value={newBatchId} onChange={(event) => setNewBatchId(event.target.value)} placeholder="e.g. B-2501" data-testid="input-new-batch-id" /></label>
+        <label className="block"><span className="mb-2 block text-xs font-bold">Products inspected</span><input type="number" min="1" className="input-lab lab-mono" value={newInspected} onChange={(event) => setNewInspected(event.target.value)} placeholder="e.g. 1000" data-testid="input-new-products-inspected" /></label>
+        <label className="block"><span className="mb-2 block text-xs font-bold">Defective products</span><input type="number" min="0" className="input-lab lab-mono" value={newDefective} onChange={(event) => setNewDefective(event.target.value)} placeholder="e.g. 12" data-testid="input-new-defective-products" /></label>
+        <button type="button" className="btn-primary h-11 sm:self-end" onClick={handleAddBatch} data-testid="button-add-batch"><span className="text-lg leading-none">+</span> Add batch</button>
+      </div>
+      {formMessage && <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive" data-testid="status-add-batch-error">{formMessage}</p>}
+      {formSuccess && <p className="mt-3 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary" data-testid="status-add-batch-success">{formSuccess}</p>}
+    </section>
     <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_220px_170px]">
       <label className="relative block"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><input type="search" className="input-lab pl-10" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search batch ID" data-testid="input-dataset-search" /></label>
       <label className="relative block"><Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} /><select className="input-lab pl-10" value={threshold} onChange={(event) => setThreshold(event.target.value)} data-testid="select-rate-filter"><option value="all">All rate bands</option><option value="low">Below overall</option><option value="watch">At or above overall</option><option value="high">Higher variation</option></select></label>
       <button type="button" className="btn-secondary" onClick={() => { setQuery(""); setThreshold("all"); setDirection("asc"); }} data-testid="button-reset-dataset"><RefreshCw size={15} /> Reset view</button>
     </div>
     <div className="mt-6 flex items-center justify-between"><div className="lab-mono text-[11px] text-muted-foreground" data-testid="text-filter-count">SHOWING {filtered.length} / {batches.length} BATCHES</div><div className="hidden items-center gap-2 text-xs text-muted-foreground md:flex"><SlidersHorizontal size={14} /> Click a header to sort</div></div>
-    <div className="table-wrap mt-3" data-testid="table-dataset"><table className="data-table"><thead><tr>{[["batchId", "Batch ID"], ["productsInspected", "Products inspected"], ["defectiveProducts", "Defective products"], ["defectRate", "Defect rate"]].map(([key, label]) => <th key={key}><button type="button" className="flex items-center gap-2 hover:text-foreground" onClick={() => changeSort(key as typeof sortBy)} data-testid={`button-sort-${key}`}>{label}{sortBy === key && <span className="text-primary">{direction === "asc" ? "↑" : "↓"}</span>}</button></th>)}<th>Reading</th></tr></thead><tbody>{filtered.map((batch) => <tr key={batch.batchId} data-testid={`row-batch-${batch.batchId}`}><td className="lab-mono font-medium text-primary">{batch.batchId}</td><td className="lab-mono">{formatNumber(batch.productsInspected)}</td><td className="lab-mono">{batch.defectiveProducts}</td><td><div className="flex items-center gap-3"><span className="lab-mono w-14">{formatPct(batch.defectRate)}</span><div className="bar-track hidden w-20 sm:block"><div className={`bar-fill ${batch.defectRate > overallDefectRate * 1.35 ? "bar-fill-warm" : ""}`} style={{ width: `${Math.min(100, batch.defectRate * 1000)}%` }} /></div></div></td><td><span className={`text-xs font-semibold ${batch.defectRate > overallDefectRate * 1.35 ? "text-accent" : "text-muted-foreground"}`}>{batch.defectRate > overallDefectRate * 1.35 ? "watch" : "in range"}</span></td></tr>)}</tbody></table></div>
+    <div className="table-wrap mt-3" data-testid="table-dataset"><table className="data-table"><thead><tr>{[["batchId", "Batch ID"], ["productsInspected", "Products inspected"], ["defectiveProducts", "Defective products"], ["defectRate", "Defect rate"]].map(([key, label]) => <th key={key}><button type="button" className="flex items-center gap-2 hover:text-foreground" onClick={() => changeSort(key as typeof sortBy)} data-testid={`button-sort-${key}`}>{label}{sortBy === key && <span className="text-primary">{direction === "asc" ? "↑" : "↓"}</span>}</button></th>)}<th>Reading</th><th>Manage</th></tr></thead><tbody>{filtered.map((batch) => <tr key={batch.batchId} data-testid={`row-batch-${batch.batchId}`}><td className="lab-mono font-medium text-primary">{batch.batchId}</td><td className="lab-mono">{formatNumber(batch.productsInspected)}</td><td className="lab-mono">{batch.defectiveProducts}</td><td><div className="flex items-center gap-3"><span className="lab-mono w-14">{formatPct(batch.defectRate)}</span><div className="bar-track hidden w-20 sm:block"><div className={`bar-fill ${batch.defectRate > overallDefectRate * 1.35 ? "bar-fill-warm" : ""}`} style={{ width: `${Math.min(100, batch.defectRate * 1000)}%` }} /></div></div></td><td><span className={`text-xs font-semibold ${batch.defectRate > overallDefectRate * 1.35 ? "text-accent" : "text-muted-foreground"}`}>{batch.defectRate > overallDefectRate * 1.35 ? "watch" : "in range"}</span></td><td><button type="button" className="text-xs font-semibold text-muted-foreground hover:text-destructive" onClick={() => handleRemoveBatch(batch.batchId)} data-testid={`button-remove-batch-${batch.batchId}`}>Remove</button></td></tr>)}</tbody></table></div>
     {filtered.length === 0 && <div className="mt-4"><EmptyState message="Try a batch ID like B-2407 or reset the rate band." /></div>}
-    <div className="mt-6 grid gap-3 sm:grid-cols-3"><Metric label="Total inspected" value={formatNumber(totalInspected)} note="across all 12 batches" testId="dataset-inspected" /><Metric label="Total defects" value={formatNumber(totalDefective)} note="observed non-conforming units" testId="dataset-defects" /><Metric label="Overall rate" value={formatPct(overallDefectRate)} note="weighted, not an average of rates" accent testId="dataset-rate" /></div>
+    <div className="mt-6 grid gap-3 sm:grid-cols-3"><Metric label="Total inspected" value={formatNumber(totalInspected)} note={`across all ${batches.length} batches`} testId="dataset-inspected" /><Metric label="Total defects" value={formatNumber(totalDefective)} note="observed non-conforming units" testId="dataset-defects" /><Metric label="Overall rate" value={formatPct(overallDefectRate)} note="weighted, not an average of rates" accent testId="dataset-rate" /></div>
   </ShellPage>;
 }
 
 export function DefectRatePage() {
+  const { batches } = useBatches();
+  const stats = getDatasetStats(batches);
+  const { totalInspected, totalDefective, overallDefectRate, highestRateBatch = batches[0], lowestRateBatch = batches[0] } = stats;
   const sorted = [...batches].sort((a, b) => b.defectRate - a.defectRate);
   return <ShellPage>
     <PageHeader eyebrow="Investigation · 03" title="Defect rate" description="The weighted overall rate is the baseline. Each bar below shows how far a batch sits from that baseline, making variation visible before we model it." />
@@ -87,6 +132,8 @@ export function DefectRatePage() {
 
 type Calculation = { n: number; p: number; x: number; exact: number; atMost: number; atLeast: number };
 export function BinomialCalculatorPage() {
+  const { batches } = useBatches();
+  const { overallDefectRate } = getDatasetStats(batches);
   const [n, setN] = useState(String(25));
   const [p, setP] = useState((overallDefectRate * 100).toFixed(2));
   const [x, setX] = useState("1");
@@ -109,6 +156,8 @@ export function BinomialCalculatorPage() {
 function CalculatorIcon() { return <span className="grid h-4 w-4 place-items-center rounded border border-current text-[9px]">=</span>; }
 
 export function SimulationPage() {
+  const { batches } = useBatches();
+  const { overallDefectRate } = getDatasetStats(batches);
   const [trials, setTrials] = useState("500");
   const [products, setProducts] = useState("20");
   const [probability, setProbability] = useState((overallDefectRate * 100).toFixed(2));
@@ -129,6 +178,8 @@ export function SimulationPage() {
 }
 
 export function BatchProbabilityPage() {
+  const { batches } = useBatches();
+  const { overallDefectRate } = getDatasetStats(batches);
   const [batchId, setBatchId] = useState(batches[0].batchId);
   const [products, setProducts] = useState("25");
   const [defects, setDefects] = useState("1");
@@ -147,6 +198,9 @@ export function BatchProbabilityPage() {
 }
 
 export function ResultsPage() {
+  const { batches } = useBatches();
+  const stats = getDatasetStats(batches);
+  const { overallDefectRate, observedMean, highestRateBatch = batches[0], lowestRateBatch = batches[0] } = stats;
   const spread = highestRateBatch.defectRate - lowestRateBatch.defectRate;
   return <ShellPage>
     <PageHeader eyebrow="Wrap-up · 07" title="Results" description="The main observations from the generated production record and the probability experiments. These are the points to carry into a project review." />
@@ -159,6 +213,8 @@ export function ResultsPage() {
 }
 
 export function ConclusionPage() {
+  const { batches } = useBatches();
+  const { totalInspected, totalDefective, overallDefectRate } = getDatasetStats(batches);
   return <ShellPage>
     <PageHeader eyebrow="Wrap-up · 08" title="Conclusion" description="The final answer, without hiding behind notation." />
     <div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
