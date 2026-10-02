@@ -118,10 +118,8 @@ change with the submitted inputs.
 
 Before publishing:
 
-1. Add `OPENAI_API_KEY` through Replit Secrets if live LLM generation is
-   required.
-2. Complete the server-side LLM follow-up and verify structured-response
-   validation and friendly provider-error handling.
+1. Add `GEMINI_API_KEY` through Replit Secrets.
+2. Verify structured-response validation and friendly provider-error handling.
 3. Run the typecheck and production build.
 4. Test the full flow in the Replit preview.
 5. Review the artifact's preview path and managed workflow.
